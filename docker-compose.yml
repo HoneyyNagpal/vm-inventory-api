@@ -1,0 +1,24 @@
+# vcsim is VMware's open source vCenter simulator (govmomi project). It serves the
+# real vSphere API, so pyvmomi talks to it exactly as it would to vCenter.
+services:
+  vcsim:
+    image: vmware/vcsim:latest
+    # 6 VMs per default host layout is plenty for a demo. Add flags here to change
+    # the simulated inventory, for example -host 4 or -ds 3.
+    command: ["-l", ":8989", "-vm", "6"]
+    ports:
+      - "8989:8989"
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      VCENTER_HOST: vcsim
+      VCENTER_PORT: "8989"
+      VCENTER_USER: user          # vcsim default credentials
+      VCENTER_PASSWORD: pass
+      VCENTER_VERIFY_SSL: "false" # vcsim uses a self-signed certificate
+      # API_KEY: change-me        # uncomment to require the X-API-Key header
+    depends_on:
+      - vcsim
